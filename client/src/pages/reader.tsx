@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ArrowLeft, ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react";
 import { ReaderControls } from "@/components/ReaderControls";
 import { HighlightToolbar } from "@/components/HighlightToolbar";
@@ -8,18 +9,38 @@ import { NoteCard, type Note } from "@/components/NoteCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTheme } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function Reader() {
   const [, params] = useRoute("/reader/:id");
   const [, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
   
-  const [currentPage, setCurrentPage] = useState(81);
+  const bookId = params?.id || "1";
   const [totalPages] = useState(180);
+  
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = localStorage.getItem(`book-${bookId}-page`);
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg" | "xl">("md");
   const [showHighlightToolbar, setShowHighlightToolbar] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [selectedColor, setSelectedColor] = useState<"yellow" | "green" | "blue" | "pink">("yellow");
+  const [goToPageOpen, setGoToPageOpen] = useState(false);
+  const [pageInput, setPageInput] = useState("");
+  
+  useEffect(() => {
+    localStorage.setItem(`book-${bookId}-page`, currentPage.toString());
+  }, [currentPage, bookId]);
   
   const [notes] = useState<Note[]>([
     {
@@ -47,9 +68,22 @@ export default function Reader() {
   };
 
   const book = {
-    id: params?.id || "1",
+    id: bookId,
     title: "The Great Gatsby",
     author: "F. Scott Fitzgerald",
+  };
+
+  const handleGoToPage = () => {
+    const page = parseInt(pageInput, 10);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      setGoToPageOpen(false);
+      setPageInput("");
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
   };
 
   return (
@@ -75,9 +109,43 @@ export default function Reader() {
             </div>
             
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground" data-testid="text-page-info">
-                Page {currentPage} of {totalPages}
-              </span>
+              <Dialog open={goToPageOpen} onOpenChange={setGoToPageOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                    data-testid="button-page-info"
+                  >
+                    Page {currentPage} of {totalPages}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md" data-testid="dialog-go-to-page">
+                  <DialogHeader>
+                    <DialogTitle>Go to Page</DialogTitle>
+                    <DialogDescription>
+                      Enter a page number between 1 and {totalPages}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      max={totalPages}
+                      placeholder="Page number"
+                      value={pageInput}
+                      onChange={(e) => setPageInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleGoToPage()}
+                      data-testid="input-page-number"
+                      autoFocus
+                    />
+                    <Button onClick={handleGoToPage} data-testid="button-go-to-page">
+                      Go
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
               <Button
                 size="icon"
                 variant="ghost"
@@ -107,7 +175,9 @@ export default function Reader() {
                   )}
                   data-testid="article-book-content"
                 >
-                  <h2 className="text-3xl md:text-4xl font-bold mb-8">Chapter 1</h2>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-8">
+                    {currentPage <= 20 ? "Chapter 1" : currentPage <= 50 ? "Chapter 2" : currentPage <= 100 ? "Chapter 3" : "Chapter 4"}
+                  </h2>
                   
                   <p className="mb-6">
                     In my younger and more vulnerable years my father gave me some advice that I've been
@@ -144,6 +214,10 @@ export default function Reader() {
                     something if I forget that, as my father snobbishly suggested, and I snobbishly repeat,
                     a sense of the fundamental decencies is parcelled out unequally at birth.
                   </p>
+                  
+                  <div className="mt-12 pt-6 border-t text-center text-sm text-muted-foreground">
+                    Page {currentPage}
+                  </div>
                 </article>
               </ScrollArea>
               
@@ -151,7 +225,7 @@ export default function Reader() {
                 <Button
                   size="icon"
                   variant="outline"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   data-testid="button-prev-page"
                   className="rounded-full bg-background/80 backdrop-blur-sm"
@@ -164,7 +238,7 @@ export default function Reader() {
                 <Button
                   size="icon"
                   variant="outline"
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   data-testid="button-next-page"
                   className="rounded-full bg-background/80 backdrop-blur-sm"
