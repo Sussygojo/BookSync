@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Upload, Plus, Moon, Sun } from "lucide-react";
+import { Search, Upload, Plus, Moon, Sun, Settings } from "lucide-react";
 import { SyncIndicator } from "./SyncIndicator";
 import { useTheme } from "./ThemeProvider";
+import { useLocation } from "wouter";
 
 interface LibraryHeaderProps {
   onUploadClick?: () => void;
@@ -18,6 +19,7 @@ export function LibraryHeader({
   syncStatus = "synced",
 }: LibraryHeaderProps) {
   const { theme, toggleTheme } = useTheme();
+  const [, setLocation] = useLocation();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
@@ -56,6 +58,15 @@ export function LibraryHeader({
             <Button onClick={onUploadClick} data-testid="button-upload">
               <Upload className="w-4 h-4" />
               Upload
+            </Button>
+            
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setLocation("/settings")}
+              data-testid="button-settings"
+            >
+              <Settings className="w-4 h-4" />
             </Button>
             
             <Button

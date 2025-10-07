@@ -42,6 +42,24 @@ export default function Reader() {
     localStorage.setItem(`book-${bookId}-page`, currentPage.toString());
   }, [currentPage, bookId]);
   
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
+        return;
+      }
+      
+      if (e.key === "ArrowLeft" && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else if (e.key === "ArrowRight" && currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+      }
+    };
+    
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPage, totalPages]);
+  
   const [notes] = useState<Note[]>([
     {
       id: "1",

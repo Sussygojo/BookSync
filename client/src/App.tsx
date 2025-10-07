@@ -7,12 +7,14 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import NotFound from "@/pages/not-found";
 import Library from "@/pages/library";
 import Reader from "@/pages/reader";
+import Settings from "@/pages/settings";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Library} />
       <Route path="/reader/:id" component={Reader} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );
