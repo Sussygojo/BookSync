@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +37,10 @@ export function UploadDialog({ trigger, onUpload }: UploadDialogProps) {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && (file.type === "application/pdf" || file.name.endsWith(".epub"))) {
+    if (
+      file &&
+      (file.type === "application/pdf" || file.name.endsWith(".epub"))
+    ) {
       setSelectedFile(file);
     }
   };
@@ -51,10 +54,10 @@ export function UploadDialog({ trigger, onUpload }: UploadDialogProps) {
 
   const handleUpload = async () => {
     if (!selectedFile) return;
-    
+
     setUploading(true);
     setProgress(0);
-    
+
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 95) {
@@ -79,7 +82,7 @@ export function UploadDialog({ trigger, onUpload }: UploadDialogProps) {
       setUploading(false);
       setProgress(0);
     }
-    
+
     clearInterval(interval);
   };
 
@@ -151,7 +154,9 @@ export function UploadDialog({ trigger, onUpload }: UploadDialogProps) {
               {uploading && (
                 <div className="space-y-2">
                   <Progress value={progress} data-testid="progress-upload" />
-                  <p className="text-xs text-muted-foreground">{progress}% uploaded</p>
+                  <p className="text-xs text-muted-foreground">
+                    {progress}% uploaded
+                  </p>
                 </div>
               )}
               {!uploading && progress === 0 && (
@@ -163,7 +168,10 @@ export function UploadDialog({ trigger, onUpload }: UploadDialogProps) {
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleUpload} data-testid="button-confirm-upload">
+                  <Button
+                    onClick={handleUpload}
+                    data-testid="button-confirm-upload"
+                  >
                     Upload
                   </Button>
                 </div>
