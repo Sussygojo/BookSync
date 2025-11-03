@@ -4,3 +4,10 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+.replit
+design_guidelines.md
+replit.md
+drizzle.config.ts
+.env
+.local
+server/
